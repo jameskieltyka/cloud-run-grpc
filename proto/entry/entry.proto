@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package au.com.kieltyka.james.entry;
+
+// To generate Go code, run this command from the top directory:
+// protoc -I=./proto --go_out=./proto ./proto/entry.proto
+
+service EntryService {
+    rpc CallEntry(EntryDataParameter) returns (EntryResult) {}
+}
+
+message EntryDataParameter {
+    string id = 1;
+    string name = 2;
+}
+
+message EntryResult {
+    string message = 1;
+}

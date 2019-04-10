@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package au.com.kieltyka.james.internal;
+
+// To generate Go code, run this command from the top directory:
+// protoc -I=./entry --go_out=./entry ./api/entry.proto
+
+service InternalService {
+    rpc GetInternalData(InternalDataParameters) returns (InternalData) {}
+}
+
+message InternalDataParameters {
+    string id = 1;
+    string name = 2;
+}
+
+message InternalData {
+    string message = 1;
+}
