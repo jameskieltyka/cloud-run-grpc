@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 
 	internal "github.com/jkieltyka/cloud-run-grpc/proto/inter"
 	"google.golang.org/grpc"
 )
 
 var (
-	port       = flag.Int("port", 8081, "The server port")
+	port, _    = strconv.ParseInt(os.Getenv("PORT"), 10, 64)
 	serverAddr = flag.String("serv_addr", "internal.svc", "The internal service address")
 )
 
@@ -24,7 +26,7 @@ func (i *internalService) GetInternalData(c context.Context, requestData *intern
 
 func createAndRegisterRPC() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

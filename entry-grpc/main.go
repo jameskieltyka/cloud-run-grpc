@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 	"time"
 
 	entry "github.com/jkieltyka/cloud-run-grpc/proto/entry"
@@ -14,7 +16,7 @@ import (
 )
 
 var (
-	port       = flag.Int("port", 8080, "The server port")
+	port, _    = strconv.ParseInt(os.Getenv("PORT"), 10, 64)
 	serverAddr = flag.String("serv_addr", "127.0.0.1:8081", "The internal service address")
 )
 
@@ -53,7 +55,7 @@ func (e *entryService) CallEntry(c context.Context, entryRequest *entry.EntryDat
 
 func createAndRegisterRPC() {
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
