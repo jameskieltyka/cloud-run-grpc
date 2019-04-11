@@ -1,13 +1,13 @@
 steps:
 #Build Image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/entry', '-f', './entry-grpc/Dockerfile']
+  args: ['build', '.', '-t', 'gcr.io/$PROJECT_ID/entry', '-f', './entry-grpc/Dockerfile']
 #Push Image
 - name: 'gcr.io/cloud-builders/docker'
   args: ["push", "gcr.io/$PROJECT_ID/entry"]
 #Build Image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/internal', '-f', './internal-grpc/Dockerfile']
+  args: ['build', '.', '-t', 'gcr.io/$PROJECT_ID/internal', '-f', './internal-grpc/Dockerfile']
 #Push Image
 - name: 'gcr.io/cloud-builders/docker'
   args: ["push", "gcr.io/$PROJECT_ID/internal"]
