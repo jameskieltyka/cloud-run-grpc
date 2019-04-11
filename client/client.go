@@ -6,12 +6,12 @@ import (
 	"log"
 	"time"
 
-	entry "github.com/jkieltyka/cloud-run-grpc/proto/entry"
+	internal "github.com/jkieltyka/cloud-run-grpc/proto/inter"
 	"google.golang.org/grpc"
 )
 
 var (
-	serverAddr = flag.String("serv_addr", "127.0.0.1:8080", "The internal service address")
+	serverAddr = flag.String("serv_addr", "internal-inbshrhksa-uc.a.run.app:443", "The internal service address")
 )
 
 func main() {
@@ -28,11 +28,11 @@ func main() {
 	defer cancel()
 
 	//Create client and call
-	client := entry.NewEntryServiceClient(conn)
-	entryMessage, err := client.CallEntry(ctx, &entry.EntryDataParameter{
+	client := internal.NewInternalServiceClient(conn)
+	entryMessage, err := client.GetInternalData(ctx, &internal.InternalDataParameters{
 		Id:   "10",
 		Name: "James",
 	})
 
-	log.Println(entryMessage.Message)
+	log.Println(err, entryMessage)
 }

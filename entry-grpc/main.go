@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
-	"net"
+	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	entry "github.com/jkieltyka/cloud-run-grpc/proto/entry"
@@ -16,25 +14,51 @@ import (
 )
 
 var (
-	port, _    = strconv.ParseInt(os.Getenv("PORT"), 10, 64)
-	serverAddr = flag.String("serv_addr", "127.0.0.1:8081", "The internal service address")
+	port       = os.Getenv("PORT")
+	serverAddr = os.Getenv("INTERNAL_SERVICE")
 )
 
-type entryService struct {
-	prefix string
-}
+// type entryService struct {
+// 	prefix string
+// }
 
-func (e *entryService) CallEntry(c context.Context, entryRequest *entry.EntryDataParameter) (*entry.EntryResult, error) {
-	// Initialise Return
+// func (e *entryService) CallEntry(c context.Context, entryRequest *entry.EntryDataParameter) (*entry.EntryResult, error) {
+// 	// Initialise Return
+// 	result := &entry.EntryResult{}
+
+// 	//Dial GRPC
+// 	opts := grpc.WithInsecure()
+// 	conn, err := grpc.Dial(*serverAddr, opts)
+// 	defer conn.Close()
+// 	if err != nil {
+// 		log.Printf("unable to dial GRPC")
+// 		return nil, nil
+// 	}
+
+// 	//Create Context
+// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+// 	defer cancel()
+
+// 	//Create client and call
+// 	client := internal.NewInternalServiceClient(conn)
+// 	internalMessage, err := client.GetInternalData(ctx, &internal.InternalDataParameters{
+// 		Id:   entryRequest.Id,
+// 		Name: entryRequest.Name,
+// 	})
+
+// 	result.Message = e.prefix + internalMessage.Message
+
+// 	return result, nil
+// }
+
+func callService(w http.ResponseWriter, r *http.Request) {
 	result := &entry.EntryResult{}
-
-	//Dial GRPC
 	opts := grpc.WithInsecure()
-	conn, err := grpc.Dial(*serverAddr, opts)
+	conn, err := grpc.Dial(serverAddr, opts)
 	defer conn.Close()
 	if err != nil {
 		log.Printf("unable to dial GRPC")
-		return nil, nil
+		return
 	}
 
 	//Create Context
@@ -44,28 +68,31 @@ func (e *entryService) CallEntry(c context.Context, entryRequest *entry.EntryDat
 	//Create client and call
 	client := internal.NewInternalServiceClient(conn)
 	internalMessage, err := client.GetInternalData(ctx, &internal.InternalDataParameters{
-		Id:   entryRequest.Id,
-		Name: entryRequest.Name,
+		Id:   "test",
+		Name: "test",
 	})
 
-	result.Message = e.prefix + internalMessage.Message
+	result.Message = "from the REST handler -->" + internalMessage.Message
 
-	return result, nil
+	fmt.Fprintf(w, result.Message)
 }
 
-func createAndRegisterRPC() {
-	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+// func createAndRegisterRPC() {
+// 	flag.Parse()
+// 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+// 	if err != nil {
+// 		log.Fatalf("failed to listen: %v", err)
+// 	}
 
-	grpcServer := grpc.NewServer()
-	entry.RegisterEntryServiceServer(grpcServer, &entryService{prefix: "Called from the entry service -> "})
-	grpcServer.Serve(lis)
-}
+// 	grpcServer := grpc.NewServer()
+// 	entry.RegisterEntryServiceServer(grpcServer, &entryService{prefix: "Called from the entry service -> "})
+// 	grpcServer.Serve(lis)
+// }
 
 func main() {
-	createAndRegisterRPC()
+	// go createAndRegisterRPC()
+	http.HandleFunc("/", callService)
+	address := ":" + port
+	http.ListenAndServe(address, nil)
 }
